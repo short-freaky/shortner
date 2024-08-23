@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            margin-right: 10px;
+        }
+        input, select, button {
+            padding: 8px;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+        #shortened-url, #click-count {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>URL Shortener</h1>
+
+    <form id="shorten-form">
+        <label for="protocol">Protocol:</label>
+        <select id="protocol">
+            <option value="https">https</option>
+            <option value="http">http</option>
+        </select>
+        
+        <label for="url-input">Enter URL:</label>
+        <input type="text" id="url-input" placeholder="example.com" required>
+        <button type="submit">Shorten</button>
+    </form>
+
+    <div id="shortened-url"></div>
+
+    <h2>Check Clicks</h2>
+    <form id="clicks-form">
+        <label for="short-url-input">Enter Shortened URL:</label>
+        <input type="text" id="short-url-input" placeholder="http://localhost:5000/abc123" required>
+        <button type="submit">Check Clicks</button>
+    </form>
+
+    <div id="click-count"></div>
+
+    <script>
+        document.getElementById('shorten-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const protocol = document.getElementById('protocol').value;
+            const url = document.getElementById('url-input').value;
+
+            const response = await fetch('/shorten', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url_body: `${protocol}://${url}` })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById('shortened-url').textContent = `Shortened URL: ${data.shortUrl}`;
+            } else {
+                document.getElementById('shortened-url').textContent = `Error: ${data.error}`;
+            }
+        });
+
+        document.getElementById('clicks-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const shortUrl = document.getElementById('short-url-input').value;
+            console.log("frontend", shortUrl)
+
+            const response = await fetch(`/clicks/${shortUrl}`, { method: 'GET' });
+            console.log(response)
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById('click-count').textContent = `Number of Clicks: ${data.clicks}`;
+            } else {
+                document.getElementById('click-count').textContent = `Error: ${data.error}`;
+            }
+        });
+    </script>
+</body>
+</html>
